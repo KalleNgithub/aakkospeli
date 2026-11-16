@@ -7,7 +7,7 @@ Näyttää lapselle ruudulla suurella fontilla sen kirjaimen tai merkin, jota h�
 ## Requirements
 
 ### Requirement: Näppäinpainallus näyttää vastaavan merkin
-Sovelluksen SHALL näyttää painetun näppäimen tuottaman merkin koko ruudun peittävänä visuaalisena elementtinä heti painalluksen jälkeen.
+Sovelluksen SHALL näyttää painetun näppäimen tuottaman merkin koko ruudun peittävänä visuaalisena elementtinä heti painalluksen jälkeen. Merkki SHALL häipyä näkyvistä muutaman sekunnin kuluessa. Kun uusi näppäin painetaan edellisen merkin vielä näkyessä, edellinen merkki SHALL vaihtua uuteen välittömästi (ilman odottelua).
 
 #### Scenario: Kirjainpainallus
 - **WHEN** käyttäjä painaa kirjainnäppäintä (esim. A, Ä, Ö, Å)
@@ -20,6 +20,14 @@ Sovelluksen SHALL näyttää painetun näppäimen tuottaman merkin koko ruudun p
 #### Scenario: Toimintonäppäin
 - **WHEN** käyttäjä painaa näppäintä, joka ei tuota tulostettavaa merkkiä (esim. F1–F12, Ctrl, Alt, Shift)
 - **THEN** ruudun sisältö ei muutu eikä virheitä näytetä
+
+#### Scenario: Merkki häipyy automaattisesti
+- **WHEN** kirjain on ilmestynyt ruudulle eikä uusia näppäimiä paineta
+- **THEN** kirjain häipyy näkyvistä muutaman sekunnin kuluessa
+
+#### Scenario: Uusi painallus korvaa näkyvän merkin
+- **WHEN** käyttäjä painaa uutta näppäintä edellisen merkin vielä näkyessä
+- **THEN** edellinen merkki vaihtuu välittömästi uuteen ilman viivettä
 
 ### Requirement: Suomalaisen näppäinasettelun merkit tuetaan
 Sovelluksen SHALL näyttää oikea merkki kaikille suomalaisen näppäinasettelun (Finnish QWERTY) näppäimille, mukaan lukien ä, ö, å ja niiden isot kirjaimet Ä, Ö, Å.

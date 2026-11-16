@@ -51,7 +51,7 @@ export const emojiMap = {
   'p': ['🐷', '🍕', '⚽', '🌲', '🐧', '🦋', '⛵', '🦉'],
   // possu, pizza, pallo, puu, pingviini, perhonen, purjevene, pöllö
 
-  'q': ['🎯', '🇶🇦'],
+  'q': ['🇶🇦'],
   // Qatar
 
   'r': ['🤖', '🌹', '🚀', '🐀', '🍇'],
@@ -78,11 +78,11 @@ export const emojiMap = {
   'y': ['🦄', '🌿'],
   // yksisarvinen, yrtti
 
-  'z': ['💤', '🇿🇼'],
-  // z-kirjain (nukkuminen), Zimbabwe
+  'z': ['🧟', '🇿🇼', '🧘', '💤'],
+  // zombi, Zimbabwe, zen, z-kirjain (nukkuminen)
 
-  'å': ['💧'],
-  // å = virta/puro ruotsissa; ei suomalaisia å-sanoja
+  'å': ['🏴󠁦󠁩󠁡󠁸󠁿', '🏞️'],
+  // Ahvenanmaa, luontomaisema; ei suomalaisia å-sanoja
 
   'ä': ['🪣', '🦀'],
   // ämpäri, äyriäinen

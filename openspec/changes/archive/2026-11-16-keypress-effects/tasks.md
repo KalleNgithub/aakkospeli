@@ -22,7 +22,7 @@
 
 ## 5. Integraatio ja verifiointi
 
-- [ ] 5.1 Testaa koko flow manuaalisesti: paina nopeasti useita näppäimiä peräkkäin ja varmista, että kirjain vaihtuu välittömästi, edelliset emojit viipyvät ja häipyvät omaan tahtiinsa, eikä konsolissa näy virheitä
+- [x] 5.1 Testaa koko flow manuaalisesti: paina nopeasti useita näppäimiä peräkkäin ja varmista, että kirjain vaihtuu välittömästi, edelliset emojit viipyvät ja häipyvät omaan tahtiinsa, eikä konsolissa näy virheitä
 - [x] 5.2 Aja `npm run build` ja varmista, että bundle pysyy alle 50 KB gzip; tarkista, että `dist/index.html` toimii `file://`-protokollalla
 
 ## Workflow follow-up

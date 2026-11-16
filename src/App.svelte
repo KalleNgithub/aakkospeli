@@ -1,6 +1,7 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
   import { pickEmoji } from './emojiMap.js';
+  import { selectWord } from './dictionary.js';
 
   let currentChar = '';
   let charKey = 0;      // increments on every intentional press to restart animation
@@ -10,6 +11,10 @@
   let fullscreenRequested = false;
   let emojis = [];
   let nextId = 0;
+  let wordState = null;    // null | { word, emoji, matched, completed }
+  let completedWord = null;
+  let completedEmoji = null;
+  let completedWordKey = 0;
 
   // --- Fullscreen ---
 
@@ -75,7 +80,7 @@
 
   function spawnEmoji(char) {
     const emoji = pickEmoji(char);
-    if (!emoji) return;
+    if (!emoji) return null;
 
     const { x, y } = randomEmojiPosition();
     // Duration 2.5–4 s, slightly randomized per emoji
@@ -88,6 +93,22 @@
     setTimeout(() => {
       emojis = emojis.filter(e => e.id !== id);
     }, duration + 500);
+
+    return emoji;
+  }
+
+  function spawnReward(word, emoji) {
+    const content = emoji ?? word.toUpperCase();
+    for (let i = 0; i < 10; i++) {
+      const x = 5 + Math.random() * 90;
+      const y = 5 + Math.random() * 90;
+      const duration = 1500 + Math.random() * 1000;
+      const id = nextId++;
+      emojis = [...emojis, { id, emoji: content, x, y, duration }];
+      setTimeout(() => {
+        emojis = emojis.filter(e => e.id !== id);
+      }, duration + 500);
+    }
   }
 
   function removeEmoji(id) {
@@ -112,12 +133,40 @@
       return;
     }
 
-    // Fresh intentional press — restart animation even for same character
+    // Fresh intentional press
     charHeld = false;
     heldKey = null;
-    currentChar = key;
-    charKey++;
-    spawnEmoji(key);
+
+    // Ignore keypresses while a completion is animating
+    if (wordState?.completed) return;
+
+    completedWord = null;
+    completedEmoji = null;
+    const spawnedEmoji = spawnEmoji(key);
+
+    let wordCompleted = false;
+    if (wordState && key.toLowerCase() === wordState.word[wordState.matched].toLowerCase()) {
+      const newMatched = wordState.matched + 1;
+      if (newMatched === wordState.word.length) {
+        wordCompleted = true;
+        spawnReward(wordState.word, wordState.emoji);
+        completedWord = wordState.word.toUpperCase();
+        completedEmoji = wordState.emoji ?? null;
+        completedWordKey++;
+        wordState = { ...wordState, matched: newMatched, completed: true };
+        setTimeout(() => { wordState = null; }, 1500);
+      } else {
+        wordState = { ...wordState, matched: newMatched };
+      }
+    } else {
+      const entry = selectWord(key, spawnedEmoji);
+      wordState = entry ? { word: entry.word, emoji: entry.emoji ?? null, matched: 1 } : null;
+    }
+
+    if (!wordCompleted) {
+      currentChar = key;
+      charKey++;
+    }
   }
 
   function handleKeyup(event) {
@@ -163,15 +212,36 @@
   >{e.emoji}</span>
 {/each}
 
-<!-- {#key charKey} restarts animation on every intentional press, including same character -->
+{#if wordState}
+  <div class="top-bar" class:completed={wordState.completed}>
+    {#if wordState.emoji}
+      <span class="word-emoji">{wordState.emoji}</span>
+    {/if}
+    {#each wordState.word.toUpperCase().split('') as letter, i}
+      <span class="word-letter" style="opacity: {i < wordState.matched ? 1 : 0.3}">{letter}</span>
+    {/each}
+  </div>
+{/if}
+
 <main>
-  {#key charKey}
-    {#if currentChar}
-      <span class="char" style={charHeld ? 'animation-play-state: paused' : ''}>{currentChar}</span>
-    {:else}
-      <p class="hint">Paina näppäintä</p>
+  {#key completedWordKey}
+    {#if completedWord}
+      {@const emojiSlots = completedEmoji ? 2 : 0}
+      <div class="char word-complete-display" style="font-size: min({Math.floor(70 / (completedWord.length + emojiSlots))}vw, 65vh)">
+        {#if completedEmoji}<span>{completedEmoji}</span>{/if}
+        <span>{completedWord}</span>
+      </div>
     {/if}
   {/key}
+  {#if !completedWord}
+    {#key charKey}
+      {#if currentChar}
+        <span class="char" style={charHeld ? 'animation-play-state: paused' : ''}>{currentChar}</span>
+      {:else}
+        <p class="hint">Paina näppäintä</p>
+      {/if}
+    {/key}
+  {/if}
 </main>
 
 <style>
@@ -220,10 +290,56 @@
     position: fixed;
     transform: translate(-50%, -50%);
     font-size: clamp(2rem, 6vmin, 5rem);
+    font-family: system-ui, sans-serif;
+    font-weight: 700;
+    color: white;
     user-select: none;
     pointer-events: none;
     animation: emojiFade linear forwards;
     /* animation-duration set inline per element */
+  }
+
+  .word-complete-display {
+    display: flex;
+    align-items: center;
+    gap: 0.2em;
+  }
+
+  .top-bar {
+    position: fixed;
+    top: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 0.15em;
+    font-family: system-ui, sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #f0e6ff;
+    user-select: none;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .word-emoji {
+    margin-right: 0.3em;
+  }
+
+  .word-letter {
+    line-height: 1;
+    transition: opacity 0.1s;
+  }
+
+  @keyframes wordComplete {
+    0%   { opacity: 1; }
+    50%  { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  .top-bar.completed {
+    color: #ffd700;
+    animation: wordComplete 1.5s ease-in forwards;
   }
 
   .return-prompt {
