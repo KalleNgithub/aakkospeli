@@ -2,6 +2,7 @@
   import { onMount, onDestroy } from 'svelte';
   import { pickEmoji } from './emojiMap.js';
   import { selectWord } from './dictionary.js';
+  import { resetSpeechStatus, speakLetter } from './letterSpeech.js';
 
   let currentChar = '';
   let charKey = 0;      // increments on every intentional press to restart animation
@@ -22,6 +23,7 @@
   // --- Fullscreen ---
 
   async function enterFullscreen() {
+    resetSpeechStatus();
     try {
       await document.documentElement.requestFullscreen();
     } catch {
@@ -30,6 +32,7 @@
   }
 
   async function handleFullscreenChange() {
+    resetSpeechStatus();
     if (!document.fullscreenElement) {
       showReturnPrompt = false;
       if (!fullscreenRequested) {
@@ -133,6 +136,7 @@
   function highlightLetter(index) {
     if (highlightTimeout) clearTimeout(highlightTimeout);
     highlightedLetter = index;
+    if (wordState) speakLetter(wordState.word[index]);
     highlightTimeout = setTimeout(() => {
       highlightedLetter = null;
     }, 800);
@@ -173,6 +177,7 @@
     // Fresh intentional press
     charHeld = false;
     heldKey = null;
+    speakLetter(key);
 
     // Ignore keypresses while a completion is animating
     if (wordState?.completed) return;
