@@ -15,6 +15,9 @@
   let completedWord = null;
   let completedEmoji = null;
   let completedWordKey = 0;
+  let highlightedLetter = null;
+  let highlightTimeout = null;
+  let ripples = [];
 
   // --- Fullscreen ---
 
@@ -115,6 +118,40 @@
     emojis = emojis.filter(e => e.id !== id);
   }
 
+  function spawnRipple(x, y) {
+    const id = nextId++;
+    ripples = [...ripples, { id, x, y }];
+    setTimeout(() => {
+      ripples = ripples.filter(r => r.id !== id);
+    }, 700);
+  }
+
+  function removeRipple(id) {
+    ripples = ripples.filter(r => r.id !== id);
+  }
+
+  function highlightLetter(index) {
+    if (highlightTimeout) clearTimeout(highlightTimeout);
+    highlightedLetter = index;
+    highlightTimeout = setTimeout(() => {
+      highlightedLetter = null;
+    }, 800);
+  }
+
+  function handleLetterClick(event, index) {
+    event.stopPropagation();
+    spawnRipple(event.clientX, event.clientY);
+    highlightLetter(index);
+  }
+
+  function handleScreenClick(event) {
+    spawnRipple(event.clientX, event.clientY);
+    if (event.target?.closest('.word-letter')) return;
+    if (wordState && !wordState.completed) {
+      highlightLetter(wordState.matched);
+    }
+  }
+
   // --- Keyboard ---
 
   function handleKeydown(event) {
@@ -181,13 +218,16 @@
     window.addEventListener('keyup', handleKeyup);
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     document.addEventListener('click', enterFullscreen);
+    document.addEventListener('click', handleScreenClick);
   });
 
   onDestroy(() => {
+    if (highlightTimeout) clearTimeout(highlightTimeout);
     window.removeEventListener('keydown', handleKeydown);
     window.removeEventListener('keyup', handleKeyup);
     document.removeEventListener('fullscreenchange', handleFullscreenChange);
     document.removeEventListener('click', enterFullscreen);
+    document.removeEventListener('click', handleScreenClick);
   });
 </script>
 
@@ -212,13 +252,27 @@
   >{e.emoji}</span>
 {/each}
 
+{#each ripples as r (r.id)}
+  <span
+    class="ripple"
+    style="left: {r.x}px; top: {r.y}px;"
+    on:animationend={() => removeRipple(r.id)}
+  ></span>
+{/each}
+
 {#if wordState}
   <div class="top-bar" class:completed={wordState.completed}>
     {#if wordState.emoji}
       <span class="word-emoji">{wordState.emoji}</span>
     {/if}
     {#each wordState.word.toUpperCase().split('') as letter, i}
-      <span class="word-letter" style="opacity: {i < wordState.matched ? 1 : 0.3}">{letter}</span>
+      <button
+        type="button"
+        class="word-letter"
+        class:clarified={highlightedLetter === i}
+        style="opacity: {i < wordState.matched ? 1 : 0.3}"
+        on:click={(event) => handleLetterClick(event, i)}
+      >{letter}</button>
     {/each}
   </div>
 {/if}
@@ -299,6 +353,29 @@
     /* animation-duration set inline per element */
   }
 
+  @keyframes ripple {
+    0% {
+      width: 0.5rem;
+      height: 0.5rem;
+      opacity: 0.8;
+    }
+    100% {
+      width: 8rem;
+      height: 8rem;
+      opacity: 0;
+    }
+  }
+
+  .ripple {
+    position: fixed;
+    z-index: 50;
+    transform: translate(-50%, -50%);
+    border: 0.3rem solid #f0e6ff;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: ripple 650ms ease-out forwards;
+  }
+
   .word-complete-display {
     display: flex;
     align-items: center;
@@ -314,11 +391,12 @@
     align-items: center;
     gap: 0.15em;
     font-family: system-ui, sans-serif;
-    font-size: 2rem;
+    max-width: 96vw;
+    font-size: clamp(2.5rem, 12vw, 4rem);
     font-weight: 700;
     color: #f0e6ff;
     user-select: none;
-    pointer-events: none;
+    pointer-events: auto;
     z-index: 10;
   }
 
@@ -327,8 +405,19 @@
   }
 
   .word-letter {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
     line-height: 1;
-    transition: opacity 0.1s;
+    transition: opacity 0.1s, transform 0.1s, color 0.1s;
+    cursor: pointer;
+  }
+
+  .word-letter.clarified {
+    color: #ffd700;
+    transform: scale(1.18);
   }
 
   @keyframes wordComplete {
