@@ -105,9 +105,11 @@
     return emoji;
   }
 
-  function spawnReward(word, emoji) {
-    const content = emoji ?? word.toUpperCase();
+  function spawnReward(word, emoji, rewardEmojis) {
     for (let i = 0; i < 10; i++) {
+      const content = rewardEmojis?.length
+        ? rewardEmojis[Math.floor(Math.random() * rewardEmojis.length)]
+        : emoji ?? word.toUpperCase();
       const x = 5 + Math.random() * 90;
       const y = 5 + Math.random() * 90;
       const duration = 1500 + Math.random() * 1000;
@@ -193,7 +195,7 @@
       const newMatched = wordState.matched + 1;
       if (newMatched === wordState.word.length) {
         wordCompleted = true;
-        spawnReward(wordState.word, wordState.emoji);
+        spawnReward(wordState.word, wordState.emoji, wordState.rewardEmojis);
         completedWord = wordState.word.toUpperCase();
         completedEmoji = wordState.emoji ?? null;
         completedWordKey++;
@@ -207,7 +209,12 @@
       }
     } else {
       const entry = selectWord(key, spawnedEmoji);
-      wordState = entry ? { word: entry.word, emoji: entry.emoji ?? null, matched: 1 } : null;
+      wordState = entry ? {
+        word: entry.word,
+        emoji: entry.hintEmoji ?? entry.emoji ?? null,
+        rewardEmojis: entry.rewardEmojis ?? null,
+        matched: 1
+      } : null;
     }
 
     if (!wordCompleted) {

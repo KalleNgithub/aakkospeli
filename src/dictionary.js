@@ -1,5 +1,7 @@
 import { emojiMap } from './emojiMap.js';
 
+const heartRewardEmojis = ['❤️'];
+
 export const dictionary = {
   'a': [
     { word: 'apina',      emoji: '🐒' },
@@ -92,6 +94,7 @@ export const dictionary = {
     { word: 'perhonen',   emoji: '🦋' },
     { word: 'purjevene',  emoji: '⛵' },
     { word: 'pöllö',      emoji: '🦉' },
+    { word: 'petra', hintEmoji: '👧', rewardEmojis: heartRewardEmojis },
   ],
   'q': [
     { word: 'qatar', emoji: '🇶🇦' },
@@ -109,6 +112,7 @@ export const dictionary = {
     { word: 'susi',      emoji: '🐺' },
     { word: 'saukko',    emoji: '🦦' },
     { word: 'sitruuna',  emoji: '🍋' },
+    { word: 'senni', hintEmoji: '👧', rewardEmojis: heartRewardEmojis },
   ],
   't': [
     { word: 'tähti',     emoji: '⭐' },

@@ -7,7 +7,7 @@ Näyttää lyhyen palkitsevan animaation kun käyttäjä kirjoittaa sanakirjasan
 ## Requirements
 
 ### Requirement: Konfettianimaatio sanan valmistuttua
-Kun sanakirjasana kirjoitetaan kokonaan, sovelluksen SHALL näyttää lyhyen konfettianimaation ja lausua sanan, kun valmis sana ilmestyy ruudulle. Animaatio koostuu useasta emojista jotka ilmestyvät ruudulle samanaikaisesti ja häipyvät muutaman sekunnin kuluessa.
+Kun sanakirjasana kirjoitetaan kokonaan, sovelluksen SHALL näyttää lyhyen konfettianimaation ja lausua sanan, kun valmis sana ilmestyy ruudulle. Animaatio koostuu useasta emojista jotka ilmestyvät ruudulle samanaikaisesti ja häipyvät muutaman sekunnin kuluessa. Petra ja Senni SHALL käyttää punaista sydäntä ❤️ reward-emoji-na.
 
 #### Scenario: Sana valmis
 - **WHEN** käyttäjä painaa sanan viimeisen kirjaimen oikein
@@ -20,3 +20,11 @@ Kun sanakirjasana kirjoitetaan kokonaan, sovelluksen SHALL näyttää lyhyen kon
 #### Scenario: Sana ei keskeydy nopeilla painalluksilla
 - **WHEN** käyttäjä painaa näppäimiä sanan lausuttua 1500 ms pitkän valmistumisikkunan aikana
 - **THEN** kirjainten puhe ei keskeytä sanan puhetta
+
+#### Scenario: Petra heart reward
+- **WHEN** Petra kirjoitetaan kokonaan
+- **THEN** konfettianimaatio käyttää vain punaista sydäntä ❤️
+
+#### Scenario: Senni heart reward
+- **WHEN** Senni kirjoitetaan kokonaan
+- **THEN** konfettianimaatio käyttää vain punaista sydäntä ❤️
