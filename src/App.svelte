@@ -2,7 +2,7 @@
   import { onMount, onDestroy } from 'svelte';
   import { pickEmoji } from './emojiMap.js';
   import { selectWord } from './dictionary.js';
-  import { resetSpeechStatus, speakLetter } from './letterSpeech.js';
+  import { resetSpeechStatus, speakLetter, speakWord } from './letterSpeech.js';
 
   let currentChar = '';
   let charKey = 0;      // increments on every intentional press to restart animation
@@ -19,6 +19,8 @@
   let highlightedLetter = null;
   let highlightTimeout = null;
   let ripples = [];
+  const WORD_COMPLETION_PROTECTION_MS = 1500;
+  const COMPLETED_WORD_SPEECH_DELAY_MS = 600;
 
   // --- Fullscreen ---
 
@@ -136,7 +138,7 @@
   function highlightLetter(index) {
     if (highlightTimeout) clearTimeout(highlightTimeout);
     highlightedLetter = index;
-    if (wordState) speakLetter(wordState.word[index]);
+    if (wordState && !wordState.completed) speakLetter(wordState.word[index]);
     highlightTimeout = setTimeout(() => {
       highlightedLetter = null;
     }, 800);
@@ -177,7 +179,7 @@
     // Fresh intentional press
     charHeld = false;
     heldKey = null;
-    speakLetter(key);
+    if (!wordState?.completed) speakLetter(key);
 
     // Ignore keypresses while a completion is animating
     if (wordState?.completed) return;
@@ -196,7 +198,10 @@
         completedEmoji = wordState.emoji ?? null;
         completedWordKey++;
         wordState = { ...wordState, matched: newMatched, completed: true };
-        setTimeout(() => { wordState = null; }, 1500);
+        setTimeout(() => {
+          speakWord(wordState.word);
+        }, COMPLETED_WORD_SPEECH_DELAY_MS);
+        setTimeout(() => { wordState = null; }, WORD_COMPLETION_PROTECTION_MS);
       } else {
         wordState = { ...wordState, matched: newMatched };
       }

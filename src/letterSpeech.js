@@ -30,6 +30,8 @@ export const letterPronunciations = {
   ö: { fi: 'öö' }
 };
 
+export const wordPronunciations = {};
+
 let speechStatus = 'unknown';
 let activeUtterance = null;
 
@@ -50,7 +52,12 @@ export function resolveLetterSpeech(character, language = 'fi') {
   return letterPronunciations[lower]?.[language] ?? character;
 }
 
-export function speakLetter(character) {
+export function resolveWordSpeech(word, language = 'fi') {
+  const lower = word.toLowerCase();
+  return wordPronunciations[lower]?.[language] ?? word;
+}
+
+function speakText(text) {
   if (speechStatus === 'broken') return;
   if (typeof window === 'undefined' ||
       !('speechSynthesis' in window) ||
@@ -62,7 +69,7 @@ export function speakLetter(character) {
   activeUtterance = null;
   window.speechSynthesis.cancel();
 
-  const utterance = new window.SpeechSynthesisUtterance(resolveLetterSpeech(character, 'fi'));
+  const utterance = new window.SpeechSynthesisUtterance(text);
   utterance.lang = 'fi-FI';
   utterance.onstart = () => {
     if (activeUtterance === utterance) speechStatus = 'working';
@@ -72,4 +79,12 @@ export function speakLetter(character) {
   };
   activeUtterance = utterance;
   window.speechSynthesis.speak(utterance);
+}
+
+export function speakLetter(character) {
+  speakText(resolveLetterSpeech(character, 'fi'));
+}
+
+export function speakWord(word) {
+  speakText(resolveWordSpeech(word, 'fi'));
 }
